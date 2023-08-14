@@ -1,0 +1,4 @@
+#ifndef DG_LUA_LUA_TABLE_H
+#define DG_LUA_LUA_TABLE_H
+
+#endif //DG_LUA_LUA_TABLE_H
