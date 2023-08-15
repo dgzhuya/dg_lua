@@ -110,6 +110,11 @@ void lua_push_c_function(struct LuaState *L, LuaCFunction f) {
     increase_top(L);
 }
 
+/**
+ * 入栈整数
+ * @param L 状态机
+ * @param integer 值
+ */
 void lua_push_integer(struct LuaState *L, int integer) {
     set_i_value(L->top, integer);
     increase_top(L);
@@ -157,6 +162,13 @@ int lua_get_global(struct LuaState *L) {
     return 1;
 }
 
+/**
+ * 将索引位置值转换为整数
+ * @param L 状态机
+ * @param idx 位置
+ * @param is_num 是否为字符串
+ * @return 转换结果
+ */
 LuaInteger lua_to_integer_x(struct LuaState *L, int idx, int *is_num) {
     LuaInteger ret = 0;
     TValue *addr = index2addr(L, idx);
@@ -170,6 +182,13 @@ LuaInteger lua_to_integer_x(struct LuaState *L, int idx, int *is_num) {
     return ret;
 }
 
+/**
+ * lua value 转换为整数
+ * @param L 状态机
+ * @param idx 索引位置
+ * @param is_num 转换状态
+ * @return 转换结果
+ */
 LuaNumber lua_to_number_x(struct LuaState *L, int idx, int *is_num) {
     LuaNumber ret = 0.0f;
     TValue *addr = index2addr(L, idx);
@@ -183,16 +202,34 @@ LuaNumber lua_to_number_x(struct LuaState *L, int idx, int *is_num) {
     return ret;
 }
 
+/**
+ * lua value 转换为布尔值
+ * @param L 状态机
+ * @param idx 索引位置
+ * @return 转换结果
+ */
 bool lua_to_boolean(struct LuaState *L, int idx) {
     TValue *addr = index2addr(L, idx);
     return !(addr->tt_ == LUA_T_NIL || addr->value_.b == 0);
 }
 
+/**
+ * 设置idx位置值为nil
+ * @param L 状态机
+ * @param idx 目标位置
+ * @return 执行结果
+ */
 int lua_is_nil(struct LuaState *L, int idx) {
     TValue *addr = index2addr(L, idx);
     return addr->tt_ == LUA_T_NIL;
 }
 
+/**
+ * lua value 转换为字符串
+ * @param L 状态机
+ * @param idx 位置
+ * @return 转换结果
+ */
 char *lua_to_string(struct LuaState *L, int idx) {
     TValue *addr = index2addr(L, idx);
     if (no_variant(addr) != LUA_T_STRING) {
@@ -203,6 +240,8 @@ char *lua_to_string(struct LuaState *L, int idx) {
 
 /**
  * 设置栈顶信息
+ * idx大于0小于stack_last则直接修改top位置,中间填充nil
+ * idx小于0大于ci->func-top的结果则直接修改top位置
  * @param L 状态机
  * @param idx 位置信息
  * @return
@@ -225,10 +264,22 @@ int lua_get_top(struct LuaState *L) {
     return cast(int, L->top - (L->ci->func + 1));
 }
 
+/**
+ * 状态机出栈
+ * @param L 状态机
+ */
 void lua_pop(struct LuaState *L) {
     lua_set_top(L, -1);
 }
 
+/**
+ * 通过索引查找地址
+ * 索引大于0小于top从ci->func位置开始
+ * 索引小于0从top位置向下查找
+ * @param L 状态机
+ * @param idx 索引位置
+ * @return 返回结果
+ */
 TValue *index2addr(struct LuaState *L, int idx) {
     if (idx >= 0) {
         assert(L->ci->func + idx < L->ci->top);
